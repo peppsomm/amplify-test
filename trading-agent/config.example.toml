@@ -1,0 +1,52 @@
+# Configurazione dell'agente di trading. Copia in config.toml e modifica.
+# I segreti (chiavi API) vanno in .env, non qui.
+
+[watchlist]
+# Azioni ed ETF USA (simboli come su NYSE/NASDAQ)
+equities = ["AAPL", "MSFT", "NVDA", "AMZN"]
+etfs = ["SPY", "QQQ", "TLT", "GLD"]
+# Coppie forex in formato BASE_QUOTE. Supportate solo coppie con USD da un lato.
+forex = ["EUR_USD", "GBP_USD", "USD_JPY"]
+
+[brokers]
+# "local" = simulatore interno (nessun conto richiesto)
+# "alpaca" = Alpaca paper trading (solo azioni/ETF)
+# "oanda"  = OANDA practice (solo forex)
+equity = "local"
+forex = "local"
+local_starting_cash = 100000.0
+local_slippage_bps = 5.0
+
+[news]
+max_age_hours = 24          # ignora news più vecchie di così
+max_news_per_cycle = 40     # tetto alle news analizzate per ciclo (controllo costi)
+finnhub_market_categories = ["general", "forex"]
+use_alphavantage_news = false  # piano gratuito: 25 richieste/giorno
+
+[analyst]
+model = "claude-opus-5-5"
+effort = "medium"           # low | medium | high | xhigh | max
+batch_size = 8              # news per singola chiamata a Claude
+use_fallbacks = true        # fallback lato server se il modello rifiuta una richiesta
+
+[strategy]
+lookback_hours = 48         # finestra delle news considerate per il segnale
+min_confidence = 0.5        # impatti con confidenza inferiore vengono ignorati
+entry_threshold = 0.6       # |score| minimo per aprire una posizione
+exit_threshold = 0.25       # chiude se il segnale si inverte oltre questa soglia
+
+[risk]
+max_position_pct = 0.05         # max 5% dell'equity per posizione
+max_gross_exposure_pct = 1.0    # esposizione lorda massima / equity (1.0 = niente leva)
+max_open_positions = 6
+daily_loss_limit_pct = 0.03     # stop nuove entrate se l'equity cala del 3% nella giornata
+stop_loss_pct = 0.03
+take_profit_pct = 0.06
+max_holding_hours = 72
+cooldown_minutes = 120          # attesa minima prima di rientrare sullo stesso strumento
+allow_short_equities = false
+allow_short_forex = true
+
+[storage]
+db_path = "state/agent.db"
+local_broker_state = "state/local_broker.json"
